@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Account List</title>
+</head>
+<body>
+    <h1>Account List</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="account : ${accounts.content}">
+                <td th:text="${account.email}"></td>
+                <td th:text="${account.name}"></td>
+                <td th:text="${account.status}"></td>
+                <td>
+                    <a th:href="@{/accounts/edit/{id}(id=${account.id})}">Edit</a> |
+                    <form th:action="@{/accounts/delete/{id}(id=${account.id})}" method="post" style="display:inline">
+                        <button type="submit">Delete</button>
+                    </form> |
+                    <form th:action="@{/accounts/toggleStatus/{id}(id=${account.id})}" method="post" style="display:inline">
+                        <button type="submit" th:text="${account.status == 'allowed' ? 'Ban' : 'Allow'}"></button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div>
+        <a th:href="@{/accounts?page=0}">First</a> |
+        <a th:href="@{/accounts?page=${accounts.number - 1}}">Prev</a> |
+        <a th:href="@{/accounts?page=${accounts.number + 1}}">Next</a> |
+        <a th:href="@{/accounts?page=${accounts.totalPages - 1}}">Last</a>
+    </div>
+</body>
+</html>

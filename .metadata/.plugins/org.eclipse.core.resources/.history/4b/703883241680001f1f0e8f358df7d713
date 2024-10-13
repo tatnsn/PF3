@@ -1,0 +1,39 @@
+package com.example.demo.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+
+import com.example.demo.constant.UlrConst;
+
+@EnableWebSecurity
+@Configuration
+public class WebSecurityConfig {
+
+    private final String USERNAME_PARAMETER = "loginId";
+
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        http
+            .authorizeHttpRequests(authorize -> 
+                authorize.requestMatchers(UlrConst.NO_AUTHENTICATION).permitAll()
+                        .anyRequest().authenticated())
+            .formLogin(login -> 
+                login.loginPage(UlrConst.LOGIN)
+                     .usernameParameter(USERNAME_PARAMETER)
+                     .defaultSuccessUrl(UlrConst.MENU)
+                     .permitAll())
+            .logout(logout -> 
+                logout.logoutUrl("/logout")
+                      .logoutSuccessUrl(UlrConst.LOGIN)
+                      .permitAll())
+            .csrf().disable(); // CSRF対策を無効化（必要に応じて変更）
+
+        return http.build();
+    }
+
+
+}

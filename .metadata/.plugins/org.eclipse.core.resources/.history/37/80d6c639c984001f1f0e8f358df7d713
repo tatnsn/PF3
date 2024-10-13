@@ -1,0 +1,52 @@
+package com.example.demo.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.example.demo.entity.Account;
+import com.example.demo.service.AccountService;
+
+import jakarta.validation.Valid;
+
+@Controller
+@RequestMapping("/accounts")
+public class AccountController {
+
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @GetMapping
+    public String listAccounts(Model model, @RequestParam(defaultValue = "0") int page) {
+        Page<Account> accountPage = accountRepository.findByIsDeletedFalse(PageRequest.of(page, 5));
+        model.addAttribute("accounts", accountPage.getContent());
+        model.addAttribute("totalPages", accountPage.getTotalPages());
+        model.addAttribute("currentPage", page);
+        return "account/list";
+    }
+
+    @PostMapping("/delete/{id}")
+    public String deleteAccount(@PathVariable Long id) {
+        Account account = accountRepository.findById(id).orElseThrow();
+        account.setIsDeleted(true);
+        accountRepository.save(account);
+        return "redirect:/accounts";
+    }
+
+    @PostMapping("/toggleStatus/{id}")
+    public String toggleStatus(@PathVariable Long id) {
+        Account account = accountRepository.findById(id).orElseThrow();
+        account.setStatus(account.getStatus() == Status.ACCESS_GRANTED ? Status.ACCESS_DENIED : Status.ACCESS_GRANTED);
+        accountRepository.save(account);
+        return "redirect:/accounts";
+    }
+}

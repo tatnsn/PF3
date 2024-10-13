@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>アカウント追加</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <script>
+        // 役割に基づいてフィールドの表示を切り替える
+        function toggleFields() {
+            var role = document.querySelector('input[name="role"]:checked').value;
+            var userFields = document.getElementById("userFields");
+            var adminFields = document.getElementById("adminFields");
+
+            if (role === 'USER') {
+                userFields.style.display = 'block';
+                adminFields.style.display = 'none';
+            } else {
+                userFields.style.display = 'none';
+                adminFields.style.display = 'block';
+            }
+        }
+
+        window.onload = function() {
+            toggleFields(); // ページ読み込み時にフィールドを切り替え
+        };
+    </script>
+</head>
+<body>
+    <h1>アカウント追加</h1>
+
+    <!-- アカウント追加フォーム -->
+    <form action="#" th:action="@{/accounts/add}" th:object="${accountForm}" method="post" enctype="multipart/form-data">
+        
+        <!-- 一般と管理者の切り替えラジオボタン -->
+        <div>
+            <label>
+                <input type="radio" name="role" th:field="*{role}" value="USER" onclick="toggleFields()" checked> 一般ユーザー
+            </label>
+            <label>
+                <input type="radio" name="role" th:field="*{role}" value="ADMIN" onclick="toggleFields()"> 管理者
+            </label>
+        </div>
+
+        <!-- 一般ユーザー用フィールド -->
+        <div id="userFields" style="display: none;">
+            <div>
+                <label>名前:</label>
+                <input type="text" th:field="*{name}" placeholder="名前">
+                <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}">名前エラー</p>
+            </div>
+
+            <div>
+                <label>メールアドレス:</label>
+                <input type="email" th:field="*{email}" placeholder="メールアドレス">
+                <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}">メールアドレスエラー</p>
+            </div>
+
+            <div>
+                <label>パスワード:</label>
+                <input type="password" th:field="*{password}" placeholder="パスワード">
+                <p th:if="${#fields.hasErrors('password')}" th:errors="*{password}">パスワードエラー</p>
+            </div>
+
+            <div>
+                <label>プロフィール画像:</label>
+                <input type="file" th:field="*{profileImage}">
+                <p th:if="${#fields.hasErrors('profileImage')}" th:errors="*{profileImage}">プロフィール画像エラー</p>
+            </div>
+
+            <div>
+                <label>ふりがな:</label>
+                <input type="text" th:field="*{furigana}" placeholder="ふりがな">
+                <p th:if="${#fields.hasErrors('furigana')}" th:errors="*{furigana}">ふりがなエラー</p>
+            </div>
+
+            <div>
+                <label>性別:</label>
+                <select th:field="*{gender}">
+                    <option value="">選択してください</option>
+                    <option value="MALE">男性</option>
+                    <option value="FEMALE">女性</option>
+                </select>
+                <p th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}">性別エラー</p>
+            </div>
+
+            <div>
+                <label>年齢:</label>
+                <input type="number" th:field="*{age}" placeholder="年齢">
+                <p th:if="${#fields.hasErrors('age')}" th:errors="*{age}">年齢エラー</p>
+            </div>
+
+            <div>
+                <label>自己紹介:</label>
+                <textarea th:field="*{introduction}" placeholder="自己紹介"></textarea>
+                <p th:if="${#fields.hasErrors('introduction')}" th:errors="*{introduction}">自己紹介エラー</p>
+            </div>
+        </div>
+
+        <!-- 管理者用フィールド -->
+        <div id="adminFields" style="display: none;">
+            <div>
+                <label>名前:</label>
+                <input type="text" th:field="*{name}" placeholder="名前">
+                <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}">名前エラー</p>
+            </div>
+
+            <div>
+                <label>メールアドレス:</label>
+                <input type="email" th:field="*{email}" placeholder="メールアドレス">
+                <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}">メールアドレスエラー</p>
+            </div>
+
+            <div>
+                <label>パスワード:</label>
+                <input type="password" th:field="*{password}" placeholder="パスワード">
+                <p th:if="${#fields.hasErrors('password')}" th:errors="*{password}">パスワードエラー</p>
+            </div>
+
+            <div>
+                <label>ステータス:</label>
+                <select th:field="*{status}">
+                    <option value="ACCESS_GRANTED">アクセス許可</option>
+                    <option value="ACCESS_DENIED">アクセス禁止</option>
+                </select>
+                <p th:if="${#fields.hasErrors('status')}" th:errors="*{status}">ステータスエラー</p>
+            </div>
+        </div>
+
+        <button type="submit">登録</button>
+    </form>
+</body>
+</html>

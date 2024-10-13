@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Account List</title>
+</head>
+<body>
+    <h1>Account List</h1>
+    <table>
+    <tr>
+        <th>名前</th>
+        <th>メールアドレス</th>
+        <th>ステータス</th>
+        <th>操作</th>
+    </tr>
+    <tr th:each="account : ${accounts}">
+        <td th:text="${account.name}">Name</td>
+        <td th:text="${account.email}">Email</td>
+        <td th:text="${account.status}">Status</td>
+        <td>
+            <a th:href="@{'/accounts/edit/' + ${account.id}}">編集</a>
+            <form th:action="@{'/accounts/delete/' + ${account.id}}" method="post" style="display:inline;">
+                <button type="submit">削除</button>
+            </form>
+            <form th:action="@{'/accounts/toggleStatus/' + ${account.id}}" method="post" style="display:inline;">
+                <button type="submit">ステータス切替</button>
+            </form>
+        </td>
+    </tr>
+</table>
+
+<div>
+    <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+        <a th:href="@{'/accounts?page=' + ${i}}" th:text="${i + 1}">1</a>
+    </span>
+</div>
+
+</body>
+</html>

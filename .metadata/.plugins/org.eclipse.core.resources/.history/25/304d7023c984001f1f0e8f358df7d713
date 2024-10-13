@@ -1,0 +1,5 @@
+package com.example.demo.repository;
+
+public interface AccountRepository extends JpaRepository<Account, Long> {
+    Page<Account> findByIsDeletedFalse(Pageable pageable);
+}

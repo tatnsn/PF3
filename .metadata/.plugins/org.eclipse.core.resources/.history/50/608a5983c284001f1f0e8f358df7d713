@@ -1,0 +1,36 @@
+package com.example.demo.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.entity.Account;
+import com.example.demo.repository.AccountRepository;
+
+@Service
+public class AccountService {
+
+    @Autowired
+    private AccountRepository accountRepository;
+
+    public Page<Account> getAllAccounts(Pageable pageable) {
+        return accountRepository.findAll(pageable);
+    }
+
+    public Account getAccountById(Long id) {
+        return accountRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+    }
+
+    public Account saveAccount(Account account) {
+        return accountRepository.save(account);
+    }
+
+    public void deleteAccount(Long id) {
+        accountRepository.deleteById(id);
+    }
+
+    public void updateAccountStatus(Long id, String status) {
+        Account account = getAccountById(id);
+        account.setStatus(status);
+        accountRepository.save(account);
+    }
+}
