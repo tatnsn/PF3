@@ -10,11 +10,14 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 
+@Data
 public class AccountForm {
+    private Long id; // IDフィールド
+    private boolean adminflag; // 管理者フラグ
 
     @NotBlank(message = "名前を入力してください")
     @Size(max = 255, message = "名前は255文字以内で入力してください")
@@ -23,6 +26,7 @@ public class AccountForm {
     @NotBlank(message = "メールアドレスを入力してください")
     @Email(message = "正しいメールアドレスの形式で入力してください")
     @Size(max = 255, message = "メールアドレスは255文字以内で入力してください")
+    @Pattern(regexp = ".*\\..*", message = "正しいメールアドレスの形式で入力してください")
     private String email;
 
     @NotBlank(message = "パスワードを入力してください")
@@ -30,11 +34,9 @@ public class AccountForm {
     @Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "パスワードは半角英数字と_-のみ使用可能です")
     private String password;
 
-    @NotNull(message = "ステータスを選択してください")
-    private Status status;
+    private Status status; // ステータス
 
-    // 一般ユーザー専用フィールド（MultipartFile型に変更）
-    private MultipartFile profileImage;
+    private MultipartFile profileImage; // プロフィール画像
 
     @Size(max = 255, message = "ふりがなは255文字以内で入力してください")
     @Pattern(regexp = "^[ぁ-ん]+$", message = "ふりがなはひらがなのみ使用できます")
@@ -49,101 +51,43 @@ public class AccountForm {
     @Size(max = 1500, message = "自己紹介は1500文字以内で入力してください")
     private String introduction;
 
+    @NotBlank(message = "役割を入力してください") // 役割のバリデーション
     private String role;
+
+    // 管理者専用フィールド
+    @NotBlank(message = "名前を入力してください")
+    private String adminname;
+
+    @NotBlank(message = "メールアドレスを入力してください")
+    @Email(message = "正しいメールアドレスの形式で入力してください")
+    private String adminemail;
+
+    @NotBlank(message = "パスワードを入力してください")
+    private String adminpassword;
+
+    @NotBlank(message = "管理者ステータスを入力してください") // adminstatusのバリデーション
+    private String adminstatus;  // 追加
 
     // コンストラクタ
     public AccountForm() {}
 
     public AccountForm(Account account) {
+        this.id = account.getId(); // IDをセット
         this.name = account.getName();
         this.email = account.getEmail();
         this.password = account.getPassword();
         this.status = account.getStatus();
-        this.profileImage = null; // アップロード処理でセットするためここではnull
         this.furigana = account.getFurigana();
         this.gender = account.getGender();
         this.age = account.getAge();
         this.introduction = account.getIntroduction();
-    }
-
-    // GetterとSetter
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public MultipartFile getProfileImage() {
-        return profileImage;
-    }
-
-    public void setProfileImage(MultipartFile profileImage) {
-        this.profileImage = profileImage;
-    }
-
-    public String getFurigana() {
-        return furigana;
-    }
-
-    public void setFurigana(String furigana) {
-        this.furigana = furigana;
-    }
-
-    public Gender getGender() {
-        return gender;
-    }
-
-    public void setGender(Gender gender) {
-        this.gender = gender;
-    }
-
-    public Integer getAge() {
-        return age;
-    }
-
-    public void setAge(Integer age) {
-        this.age = age;
-    }
-
-    public String getIntroduction() {
-        return introduction;
-    }
-
-    public void setIntroduction(String introduction) {
-        this.introduction = introduction;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
+        this.role = account.getRole(); // 役割をセット
+     // 管理者情報も必要であれば設定
+        if (account.isAdminstatus()) {
+            this.adminname = account.getName(); // 役割に応じたフィールドを追加
+            this.adminemail = account.getEmail();
+            this.adminpassword = account.getPassword(); // 初期化したい場合
+            this.adminstatus = account.isAdminstatus() ? "true" : "false"; // boolean を String に変換
+        }
     }
 }

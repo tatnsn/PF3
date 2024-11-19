@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アカウント詳細</title>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var csrfToken = /*[[@{${_csrf.token}}]]*/ 'null';
+        /*]]>*/
+    </script>
+</head>
+<body>
+    <h1>アカウント詳細</h1>
+
+    <div id="accountDetails">
+        <!-- 名前 -->
+        <h2 th:text="${account.name}">アカウント名</h2>
+
+        <!-- プロフィール画像 -->
+        <img th:src="${account.profileImage}" alt="プロフィール画像" width="100" height="100"/>
+
+        <!-- ふりがな -->
+        <p th:text="'ふりがな: ' + ${account.furigana}">ふりがな: -</p>
+
+        <!-- 性別 -->
+        <p th:text="'性別: ' + ${genderJapanese}">性別: -</p>
+
+
+        <!-- 年齢 -->
+        <p th:text="'年齢: ' + ${account.age} + '歳'">年齢: -</p>
+
+        <!-- 自己紹介 -->
+        <p th:text="'自己紹介: ' + ${account.introduction}">自己紹介: -</p>
+
+        <!-- いいね数 -->
+        <p th:text="'いいね数: ' + ${account.likes}">いいね数: 0</p>
+
+        <!-- いいねボタン -->
+        <button th:attr="data-account-id=${account.id}" onclick="likeAccount(this)">
+            ❤️ いいね
+        </button>
+    </div>
+
+    <script>
+        function likeAccount(buttonElement) {
+            const accountId = buttonElement.getAttribute("data-account-id");
+            const url = `/public/account/${accountId}/like`;
+            console.log("Sending request to: " + url);
+
+            fetch(url, { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken // CSRFトークンを送信
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(result => {
+                if (result === 'success') {
+                    console.log("Like operation successful for account ID:", accountId);
+                    // アカウントの詳細を再取得する処理
+                    fetch(`/public/account/${accountId}/details`)
+                        .then(response => response.json())
+                        .then(account => {
+                            // 更新された情報をDOMに反映
+                            document.querySelector(`#accountDetails h2`).innerText = account.name;
+                            document.querySelector(`#accountDetails img`).src = account.profileImage;
+                            document.querySelector(`#accountDetails p:nth-of-type(1)`).innerText = `ふりがな: ${account.furigana}`;
+                            document.querySelector(`#accountDetails p:nth-of-type(2)`).innerText = `性別: ${convertGenderToJapanese(account.gender)}`;
+                            document.querySelector(`#accountDetails p:nth-of-type(3)`).innerText = `年齢: ${account.age}歳`;
+                            document.querySelector(`#accountDetails p:nth-of-type(4)`).innerText = `自己紹介: ${account.introduction}`;
+                            document.querySelector(`#accountDetails p:nth-of-type(5)`).innerText = `いいね数: ${account.likes}`;
+                        })
+                        .catch(error => console.error("Error fetching account details:", error));
+                } else {
+                    alert("エラーが発生しました: " + result);
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+        /**
+ * 性別を日本語表記に変換するヘルパー関数
+ */
+function convertGenderToJapanese(gender) {
+    if (gender === 'MALE') {
+        return '男性';
+    } else if (gender === 'FEMALE') {
+        return '女性';
+    } else {
+        return 'その他';
+    }
+}
+    </script>
+</body>
+</html>

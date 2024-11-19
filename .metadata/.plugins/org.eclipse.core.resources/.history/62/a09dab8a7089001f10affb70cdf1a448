@@ -1,0 +1,27 @@
+package com.example.demo.repository.mybatis;
+
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
+import org.springframework.stereotype.Repository;
+
+import com.example.demo.enums.Gender;
+import com.example.demo.enums.Status;
+
+@Mapper
+@Repository("myBatisAccountRepositoryMyBatis")
+public interface MyBatisAccountRepository {
+
+	
+	@Insert("insert into accounts (name,email, password, status,gender,furigana,age,introduction,profile_image) "
+			+ "values (#{name}, #{email},#{password}, #{status},#{gender},#{furigana},#{age},#{introduction},#{profileImagename})")
+	void create(
+			String name,
+			String email,
+			String password,
+			Status status,
+			Gender gender,
+			String furigana,
+			Integer age,
+			String introduction,
+			String profileImagename);
+}

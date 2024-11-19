@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="リソース名 &apos;SampleWeb/src/main/resources/templates/public/monthlyLikes.html&apos; を &apos;ranking.html&apos; に変更します" description="リソース &apos;monthlyLikes.html&apos; の名前変更" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/main/resources/templates/public/monthlyLikes.html" name="ranking.html" stamp="1731511123361" updateReferences="true"/>
+</session>

@@ -1,6 +1,0 @@
-package com.example.demo.repository;
-
-@Repository
-public interface AccountRepository extends JpaRepository<Account, Long> {
-    List<Account> findAllByRole(String role, Pageable pageable); // ページネーション対応
-}

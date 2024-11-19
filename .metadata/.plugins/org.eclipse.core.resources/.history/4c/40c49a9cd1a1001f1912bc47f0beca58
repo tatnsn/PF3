@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>月のいいねランキング</title>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var csrfToken = /*[[@{${_csrf.token}}]]*/ 'null';
+        /*]]>*/
+    </script>
+</head>
+<body>
+    <h1>月のいいねランキング</h1>
+
+    <!-- 月変更フォーム -->
+    <div>
+        <form id="month-form" action="/public/ranking" method="get">
+            <label for="month">月を選択：</label>
+            <input type="number" id="month" name="month" min="1" max="12" value="1">
+            <button type="submit">表示</button>
+        </form>
+    </div>
+
+    <ul id="account-list">
+        <th:block th:each="account : ${accounts}">
+            <li>
+                <img th:src="${account.profileImage}" alt="プロフィール画像" width="50" height="50"/>
+                <span th:text="${account.name}">アカウント名</span>
+                <button th:attr="data-account-id=${account.id}" onclick="likeAccount(this)">
+                   ❤️ いいね (<span id="likes-${account.id}" th:text="${account.likes}">0</span>)
+                </button>
+            </li>
+        </th:block>
+    </ul>
+
+    <script>
+        // いいねボタンの非同期処理
+        function likeAccount(buttonElement) {
+            const accountId = buttonElement.getAttribute("data-account-id");
+            const url = `/public/account/${accountId}/like`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'success') {
+                    console.log("Like operation successful for account ID:", accountId);
+                    // アカウントの詳細を再取得する処理
+                    fetch(`/public/account/${accountId}/details`)
+                        .then(response => response.json())
+                        .then(account => {
+                            const likesElement = document.querySelector(`#accountDetails p`);
+                            if (likesElement) {
+                                likesElement.innerText = `いいね数: ${account.likes}`; // 最新のいいね数を表示
+                            } else {
+                                console.error("Likes element not found for account ID:", accountId);
+                            }
+                        })
+                        .catch(error => console.error("Error fetching account details:", error));
+                } else {
+                    alert("エラーが発生しました: " + result);
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+</html>

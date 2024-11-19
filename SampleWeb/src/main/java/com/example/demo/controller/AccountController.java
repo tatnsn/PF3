@@ -1,15 +1,15 @@
 package com.example.demo.controller;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -23,8 +23,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.entity.Account;
 import com.example.demo.enums.Status;
-import com.example.demo.form.AccountForm;
-import com.example.demo.repository.AccountRepository;
+import com.example.demo.form.AdminAccountForm;
+import com.example.demo.form.UserAccountForm;
+import com.example.demo.repository.jpa.AccountRepository;
 
 import jakarta.validation.Valid;
 
@@ -32,12 +33,123 @@ import jakarta.validation.Valid;
 @RequestMapping("/accounts")
 public class AccountController {
 
-    @Autowired
-    private AccountRepository accountRepository;
+	@Autowired 
+	private AccountRepository accountRepository;
 
-    private final String uploadDir = "path/to/save/images/"; // アップロードするディレクトリ
 
-    // アカウント一覧表示 (5件毎のページネーション)
+	@GetMapping("/add")
+	@PreAuthorize("hasRole('ROLE_ADMIN')")  // ROLE_ADMINのみアクセス可能
+	public String showAddAccountForm(Model model) {
+	    model.addAttribute("userAccountForm", new UserAccountForm());
+	    model.addAttribute("adminAccountForm", new AdminAccountForm());
+	    return "account/add";
+	}
+
+	@PostMapping("/add")
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public String addAccount(
+	        @RequestParam("role") String role,
+	        @Valid @ModelAttribute("userAccountForm") UserAccountForm userAccountForm,
+	        BindingResult userResult,
+	        @Valid @ModelAttribute("adminAccountForm") AdminAccountForm adminAccountForm,
+	        BindingResult adminResult,
+	        Model model) {
+
+	    if ("ROLE_USER".equals(role)) {
+	        // 一般ユーザーの登録処理
+	        if (userResult.hasErrors()) {
+	            model.addAttribute("userAccountForm", userAccountForm);
+	            model.addAttribute("adminAccountForm", new AdminAccountForm());
+	            model.addAttribute("errorMessage", "入力内容にエラーがあります。");
+	            return "account/add";
+	        }
+
+	        // プロフィール画像の保存処理
+	        String profileImageFileName = null;
+	        try {
+	            if (userAccountForm.getProfileImage() != null && !userAccountForm.getProfileImage().isEmpty()) {
+	                profileImageFileName = saveProfileImage(userAccountForm.getProfileImage());
+	            }
+	        } catch (IllegalArgumentException e) {
+	            userResult.rejectValue("profileImage", "error.profileImage", e.getMessage());
+	            model.addAttribute("userAccountForm", userAccountForm);
+	            model.addAttribute("adminAccountForm", new AdminAccountForm());
+	            model.addAttribute("errorMessage", e.getMessage());
+	            return "account/add";
+	        }
+
+	        // Account エンティティのインスタンスを作成し、一般ユーザー情報を設定
+	        Account userAccount = new Account();
+	        userAccount.setName(userAccountForm.getName());
+	        userAccount.setEmail(userAccountForm.getEmail());
+	        userAccount.setPassword(userAccountForm.getPassword());
+	        userAccount.setProfileImage(profileImageFileName); // ファイル名を設定
+	        userAccount.setFurigana(userAccountForm.getFurigana());
+	        userAccount.setGender(userAccountForm.getGender());
+	        userAccount.setAge(userAccountForm.getAge());
+	        userAccount.setIntroduction(userAccountForm.getIntroduction());
+	        userAccount.setStatus(userAccountForm.getStatus());
+	        userAccount.setRole("ROLE_USER"); // ロールを "ROLE_USER" に設定
+	        userAccount.setAdminstatus(false); // 一般ユーザーのため `adminstatus` を `false` に設定
+
+	        accountRepository.save(userAccount);
+	    } else if ("ROLE_ADMIN".equals(role)) {
+	        // 管理者の登録処理
+	        if (adminResult.hasErrors()) {
+	            model.addAttribute("userAccountForm", new UserAccountForm());
+	            model.addAttribute("adminAccountForm", adminAccountForm);
+	            model.addAttribute("errorMessage", "管理者情報にエラーがあります。");
+	            return "account/add";
+	        }
+
+	     // Account エンティティのインスタンスを作成し、管理者情報を設定
+	        Account adminAccount = new Account();
+	        adminAccount.setName(adminAccountForm.getAdminname());
+	        adminAccount.setEmail(adminAccountForm.getAdminemail());
+	        adminAccount.setPassword(adminAccountForm.getAdminpassword());
+	        adminAccount.setStatus(adminAccountForm.getStatus());
+	        adminAccount.setRole("ROLE_ADMIN"); // ロールを "ROLE_ADMIN" に設定
+	        adminAccount.setAdminstatus(true); // 管理者のため `adminstatus` を `true` に設定
+
+	        accountRepository.save(adminAccount);
+	    } else {
+	        // ロールが無効な場合
+	        model.addAttribute("errorMessage", "無効なロールです。");
+	        return "account/add";
+	    }
+
+	    return "redirect:/accounts";
+	}
+
+
+
+	private String saveProfileImage(MultipartFile profileImage) {
+	    if (profileImage == null || profileImage.isEmpty()) {
+	        return null;
+	    }
+
+	    // ファイルサイズのバリデーション (2MB制限)
+	    if (profileImage.getSize() > 2 * 1024 * 1024) {
+	        throw new IllegalArgumentException("プロフィール画像は2MB以内である必要があります。");
+	    }
+
+	    String filename = UUID.randomUUID().toString() + "_" + profileImage.getOriginalFilename();
+	    String uploadDir = "C:/ForDevelop/workspace/PF3/SampleWeb/src/main/resources/static/images";
+	    File destinationFile = new File(uploadDir, filename);
+
+	    try {
+	        profileImage.transferTo(destinationFile);
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	        return null;
+	    }
+
+	    return "/images/" + filename;
+	}
+
+
+
+
     @GetMapping
     public String listAccounts(Model model, @RequestParam(defaultValue = "0") int page) {
         Page<Account> accountPage = accountRepository.findByIsDeletedFalse(PageRequest.of(page, 5));
@@ -47,117 +159,107 @@ public class AccountController {
         return "account/list";
     }
 
-    // アカウント追加画面表示
-    @GetMapping("/add")
-    public String showAddAccountForm(Model model) {
-        model.addAttribute("accountForm", new AccountForm());
-        return "account/add";
-    }
-
-    // アカウント追加処理
-    @PostMapping("/add")
-    public String addAccount(@Valid @ModelAttribute("accountForm") AccountForm accountForm, BindingResult result, Model model) {
-        if (result.hasErrors()) {
-            return "account/add";
-        }
-
-        Account account = new Account();
-        mapFormToAccount(accountForm, account);
-
-        // プロフィール画像の保存処理
-        MultipartFile profileImage = accountForm.getProfileImage();
-        if (profileImage != null && !profileImage.isEmpty()) {
-            try {
-                // ディレクトリが存在しない場合は作成
-                if (!Files.exists(Paths.get(uploadDir))) {
-                    Files.createDirectories(Paths.get(uploadDir));
-                }
-
-                // 一意のファイル名を生成
-                String originalFileName = profileImage.getOriginalFilename();
-                String fileName = UUID.randomUUID().toString() + "_" + originalFileName;
-                Path filePath = Paths.get(uploadDir + fileName);
-                Files.copy(profileImage.getInputStream(), filePath);
-
-                // 保存したファイルのファイル名をアカウントに設定
-                account.setProfileImage(fileName);
-            } catch (IOException e) {
-                e.printStackTrace();
-                model.addAttribute("uploadError", "プロフィール画像のアップロードに失敗しました。");
-                return "account/add";
-            }
-        }
-
-        accountRepository.save(account);
-        return "redirect:/accounts";
-    }
-
-    // アカウント編集画面表示
     @GetMapping("/edit/{id}")
     public String showEditAccountForm(@PathVariable Long id, Model model) {
-        Account account = accountRepository.findById(id).orElseThrow();
-        AccountForm accountForm = new AccountForm(account);
-        model.addAttribute("accountForm", accountForm);
+        Account account = accountRepository.findById(id).orElseThrow(() -> new RuntimeException("Account not found"));
+
+        if ("ROLE_USER".equals(account.getRole())) {
+            UserAccountForm userAccountForm = new UserAccountForm(account);
+            model.addAttribute("userAccountForm", userAccountForm);
+            model.addAttribute("adminAccountForm", new AdminAccountForm());
+        } else if ("ROLE_ADMIN".equals(account.getRole())) {
+            AdminAccountForm adminAccountForm = new AdminAccountForm(account);
+            model.addAttribute("adminAccountForm", adminAccountForm);
+            model.addAttribute("userAccountForm", new UserAccountForm());
+        }
+
+        model.addAttribute("account", account);
         return "account/edit";
     }
 
-    // アカウント編集処理
+
     @PostMapping("/edit/{id}")
-    public String editAccount(@PathVariable Long id, @Valid @ModelAttribute("accountForm") AccountForm accountForm, BindingResult result, Model model) {
-        if (result.hasErrors()) {
+    public String editAccount(
+            @PathVariable Long id,
+            @RequestParam("role") String role,
+            @Valid @ModelAttribute("userAccountForm") UserAccountForm userAccountForm,
+            BindingResult userResult,
+            @Valid @ModelAttribute("adminAccountForm") AdminAccountForm adminAccountForm,
+            BindingResult adminResult,
+            Model model) {
+
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+
+       
+
+        if ("ROLE_USER".equals(role)) {
+            if (userResult.hasErrors()) {
+                model.addAttribute("userAccountForm", userAccountForm);
+                model.addAttribute("adminAccountForm", new AdminAccountForm());
+                model.addAttribute("account", account); // `account` をテンプレートに渡す
+                return "account/edit";
+            }
+
+            String profileImageFileName = account.getProfileImage();
+            try {
+                if (userAccountForm.getProfileImage() != null && !userAccountForm.getProfileImage().isEmpty()) {
+                    profileImageFileName = saveProfileImage(userAccountForm.getProfileImage());
+                }
+            } catch (IllegalArgumentException e) {
+                userResult.rejectValue("profileImage", "error.profileImage", e.getMessage());
+                model.addAttribute("userAccountForm", userAccountForm);
+                model.addAttribute("adminAccountForm", new AdminAccountForm());
+                model.addAttribute("account", account); // `account` をテンプレートに渡す
+                model.addAttribute("errorMessage", e.getMessage());
+                return "account/edit";
+            }
+
+            account.setName(userAccountForm.getName());
+            account.setEmail(userAccountForm.getEmail());
+            if (!userAccountForm.getPassword().isEmpty()) {
+                account.setPassword(userAccountForm.getPassword());
+            }
+            account.setProfileImage(profileImageFileName);
+            account.setFurigana(userAccountForm.getFurigana());
+            account.setGender(userAccountForm.getGender());
+            account.setAge(userAccountForm.getAge());
+            account.setIntroduction(userAccountForm.getIntroduction());
+            account.setStatus(userAccountForm.getStatus());
+            account.setRole("ROLE_USER");
+            account.setAdminstatus(false);
+
+        } else if ("ROLE_ADMIN".equals(role)) {
+            if (adminResult.hasErrors()) {
+                model.addAttribute("userAccountForm", new UserAccountForm());
+                model.addAttribute("adminAccountForm", adminAccountForm);
+                model.addAttribute("account", account); // `account` をテンプレートに渡す
+                return "account/edit";
+            }
+
+            // 管理者の情報を更新
+            account.setName(adminAccountForm.getAdminname());
+            account.setEmail(adminAccountForm.getAdminemail());
+            if (!adminAccountForm.getAdminpassword().isEmpty()) {
+                account.setPassword(adminAccountForm.getAdminpassword());
+            }
+            account.setStatus(adminAccountForm.getStatus());
+            account.setRole("ROLE_ADMIN");
+            account.setAdminstatus(true);
+
+        } else {
+            // 無効なロールエラー
+            System.out.println("Invalid role received: " + role);
+            model.addAttribute("errorMessage", "無効なロールです。");
             return "account/edit";
         }
 
-        Account account = accountRepository.findById(id).orElseThrow();
-        mapFormToAccount(accountForm, account);
-
-        // プロフィール画像の更新処理
-        MultipartFile profileImage = accountForm.getProfileImage();
-        if (profileImage != null && !profileImage.isEmpty()) {
-            try {
-                // ディレクトリが存在しない場合は作成
-                if (!Files.exists(Paths.get(uploadDir))) {
-                    Files.createDirectories(Paths.get(uploadDir));
-                }
-
-                // 一意のファイル名を生成
-                String originalFileName = profileImage.getOriginalFilename();
-                String fileName = UUID.randomUUID().toString() + "_" + originalFileName;
-                Path filePath = Paths.get(uploadDir + fileName);
-                Files.copy(profileImage.getInputStream(), filePath);
-
-                // 保存したファイルのファイル名をアカウントに設定
-                account.setProfileImage(fileName);
-            } catch (IOException e) {
-                e.printStackTrace();
-                model.addAttribute("uploadError", "プロフィール画像のアップロードに失敗しました。");
-                return "account/edit";
-            }
-        }
-
         accountRepository.save(account);
         return "redirect:/accounts";
     }
 
-    // アカウント削除 (論理削除)
-    @PostMapping("/delete/{id}")
-    public String deleteAccount(@PathVariable Long id) {
-        Account account = accountRepository.findById(id).orElseThrow();
-        account.setDeleted(true);
-        accountRepository.save(account);
-        return "redirect:/accounts";
-    }
 
-    // ステータス切り替え (アクセス許可⇔アクセス禁止)
-    @PostMapping("/toggleStatus/{id}")
-    public String toggleStatus(@PathVariable Long id) {
-        Account account = accountRepository.findById(id).orElseThrow();
-        account.setStatus(account.getStatus() == Status.ACCESS_GRANTED ? Status.ACCESS_DENIED : Status.ACCESS_GRANTED);
-        accountRepository.save(account);
-        return "redirect:/accounts";
-    }
 
-    // 削除されたアカウント一覧表示
     @GetMapping("/deleted")
     public String listDeletedAccounts(Model model) {
         List<Account> deletedAccounts = accountRepository.findByIsDeletedTrue();
@@ -165,36 +267,38 @@ public class AccountController {
         return "account/deleted";
     }
 
-    // アカウント復元
-    @PostMapping("/restore/{id}")
-    public String restoreAccount(@PathVariable Long id) {
-        Account account = accountRepository.findById(id).orElseThrow();
-        account.setDeleted(false);
+    @PostMapping("/delete/{id}")
+    public String deleteAccount(@PathVariable Long id) {
+        Account account = accountRepository.findById(id).orElseThrow(() -> new RuntimeException("Account not found"));
+        account.setDeleted(true);
+        account.setDeletedDate(LocalDateTime.now()); // 現在の日時を削除日時に設定
         accountRepository.save(account);
-        return "redirect:/account/deleted";
+        return "redirect:/accounts";
     }
 
-    // 完全削除
     @PostMapping("/deletePermanent/{id}")
     public String deletePermanentAccount(@PathVariable Long id) {
         accountRepository.deleteById(id);
-        return "redirect:/account/deleted";
+        return "redirect:/accounts/deleted";
     }
 
-    // フォームからエンティティにマッピングする共通メソッド
-    private void mapFormToAccount(AccountForm form, Account account) {
-        account.setName(form.getName());
-        account.setEmail(form.getEmail());
-        account.setPassword(form.getPassword());
-        account.setStatus(form.getStatus());
-        account.setFurigana(form.getFurigana());
-        account.setGender(form.getGender());
-        account.setAge(form.getAge());
-        account.setIntroduction(form.getIntroduction());
-
-        // プロフィール画像のフィールドを設定
-        if (form.getProfileImage() != null && !form.getProfileImage().isEmpty()) {
-            account.setProfileImage(form.getProfileImage().getOriginalFilename());
-        }
+    @PostMapping("/restore/{id}")
+    public String restoreAccount(@PathVariable Long id) {
+        Account account = accountRepository.findById(id).orElseThrow(() -> new RuntimeException("Account not found"));
+        account.setDeleted(false);
+        accountRepository.save(account);
+        return "redirect:/accounts/deleted";
     }
+
+    @PostMapping("/toggleStatus/{id}")
+    public String toggleStatus(@PathVariable Long id) {
+        Account account = accountRepository.findById(id).orElseThrow(() -> new RuntimeException("Account not found"));
+        account.setStatus(account.getStatus() == Status.ACCESS_GRANTED ? Status.ACCESS_DENIED : Status.ACCESS_GRANTED);
+        accountRepository.save(account);
+        return "redirect:/accounts";
+    }
+
+   
+
 }
+    

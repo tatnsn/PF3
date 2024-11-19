@@ -1,0 +1,53 @@
+package com.example.demo.controller;
+
+import java.time.LocalDate;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.example.demo.entity.Account;
+
+@Controller
+@RequestMapping("/user/dashboard")
+public class UserDashboardController {
+
+	@GetMapping
+    public String showDashboard(@AuthenticationPrincipal Account loggedInUser, Model model) {
+        // 年間のいいね数を取得
+        int yearlyLikes = likeService.getLikesForYear(loggedInUser.getId(), LocalDate.now().getYear());
+        // 今月のいいね数を取得
+        int monthlyLikes = likeService.getLikesForMonth(loggedInUser.getId(), LocalDate.now().getYear(), LocalDate.now().getMonthValue());
+
+        model.addAttribute("totalLikes", yearlyLikes);  // 年間のいいね数
+        model.addAttribute("monthlyLikes", monthlyLikes); // 月間のいいね数
+        return "user/dashboard"; // user/dashboard.html
+    }
+
+    @GetMapping("/settings")
+    public String showUserSettings(Model model) {
+        model.addAttribute("settings", getSettings());
+        return "user/settings"; // user/settings.html
+    }
+
+    private String getSettings() {
+        return "Settings Data"; // 仮の設定データ
+    }
+
+    @GetMapping("/profile")
+    public String showUserProfile(Model model) {
+        model.addAttribute("profile", getProfile());
+        return "user/profile"; // user/profile.html
+    }
+
+    private String getProfile() {
+        return "Profile Data"; // 仮のプロファイルデータ
+    }
+    
+    @GetMapping("/contacts")
+    public String showUserContacts() {
+        return "redirect:/user/contacts/list"; // お問い合わせ一覧ページへリダイレクト
+    }
+    
+}

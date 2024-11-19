@@ -1,3 +1,0 @@
-# Dozerのカスタム設定例
-dozer.debug=true
-dozer.mappingFiles=dozer-mappings.xml

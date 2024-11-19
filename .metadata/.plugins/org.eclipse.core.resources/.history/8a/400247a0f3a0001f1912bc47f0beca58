@@ -1,0 +1,42 @@
+package com.example.demo.service;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.entity.Account;
+import com.example.demo.repository.jpa.AccountRepository;
+
+@Service
+public class LikeService {
+
+    @Autowired
+    private AccountRepository accountRepository;
+
+    // アカウントのいいね数を1増加させる
+    public void likeAccount(Long accountId) {
+        Account account = accountRepository.findById(accountId).orElse(null);
+        if (account != null) {
+            int currentLikes = account.getLikes();
+            account.setLikes(currentLikes + 1);
+            accountRepository.save(account);
+            System.out.println("Updated likes for account ID: " + accountId + " to " + (currentLikes + 1)); // ログ出力
+        } else {
+            throw new RuntimeException("Account not found with ID: " + accountId);
+        }
+    }
+
+    // 月ごとのいいねランキング
+    public List<Account> findTopLikedAccountsForMonth(LocalDate startOfMonth, LocalDate endOfMonth) {
+        // LocalDateからLocalDateTimeに変換
+        LocalDateTime startOfMonthDateTime = startOfMonth.atStartOfDay(); // 月の初日の00:00
+        LocalDateTime endOfMonthDateTime = endOfMonth.atTime(23, 59, 59, 999999999); // 月の最終日の23:59:59.999999999
+
+        return accountRepository.findTopLikedAccountsForMonth(startOfMonthDateTime, endOfMonthDateTime);
+    }
+
+
+}

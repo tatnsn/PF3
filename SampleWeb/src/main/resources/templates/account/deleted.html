@@ -2,46 +2,80 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>削除されたアカウント一覧</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .page-title {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+        }
+        .table-container {
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+        }
+        .btn-group {
+            margin-top: 20px;
+        }
+        @media (max-width: 576px) {
+            .table-container {
+                font-size: 14px;
+            }
+            .btn-group {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
 </head>
-<body>
+<body class="bg-light">
 
 <div class="container">
-    <h1>削除されたアカウント一覧</h1>
+    <h1 class="page-title">削除されたアカウント一覧</h1>
 
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>名前</th>
-                <th>メールアドレス</th>
-                <th>ステータス</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="account : ${deletedAccounts}">
-                <td th:text="${account.name}">Name</td>
-                <td th:text="${account.email}">Email</td>
-                <td th:text="${account.status == 'ACCESS_GRANTED' ? 'アクセス許可' : 'アクセス禁止'}">Status</td>
-                <td>
-                    <!-- 復元ボタン -->
-                    <form th:action="@{'/accounts/restore/' + ${account.id}}" method="post" style="display:inline;">
-                        <button class="btn btn-success btn-sm" type="submit">復元</button>
-                    </form>
+    <div class="table-container table-responsive">
+        <table class="table table-hover table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">名前</th>
+                    <th scope="col">メールアドレス</th>
+                    <th scope="col">ステータス</th>
+                    <th scope="col">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="account : ${deletedAccounts}">
+                    <td th:text="${account.name}">Name</td>
+                    <td th:text="${account.email}">Email</td>
+                    <td th:text="${account.status == 'ACCESS_GRANTED' ? 'アクセス許可' : 'アクセス禁止'}">Status</td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <!-- 復元ボタン -->
+                            <form th:action="@{'/accounts/restore/' + ${account.id}}" method="post" style="display:inline;">
+                                <button class="btn btn-success btn-sm" type="submit">復元</button>
+                            </form>
 
-                    <!-- 完全削除ボタン -->
-                    <form th:action="@{'/accounts/deletePermanent/' + ${account.id}}" method="post" style="display:inline;">
-                        <button class="btn btn-danger btn-sm" type="submit" onclick="return confirm('このアカウントを完全に削除しますか？');">完全に削除</button>
-                    </form>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+                            <!-- 完全削除ボタン -->
+                            <form th:action="@{'/accounts/deletePermanent/' + ${account.id}}" method="post" style="display:inline;">
+                                <button class="btn btn-danger btn-sm" type="submit" onclick="return confirm('このアカウントを完全に削除しますか？');">完全に削除</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
     <!-- アカウント一覧への戻るボタン -->
-    <a class="btn btn-secondary" th:href="@{/accounts}">アカウント一覧に戻る</a>
-
+    <div class="text-center mt-3">
+        <a class="btn btn-secondary" th:href="@{/accounts}">アカウント一覧に戻る</a>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

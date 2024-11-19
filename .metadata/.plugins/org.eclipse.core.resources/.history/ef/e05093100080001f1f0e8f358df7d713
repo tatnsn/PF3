@@ -1,7 +1,0 @@
-package com.example.demo.constant;
-
-public class UlrConst {
-	
-	 public static final String LOGIN = "/login";
-
-}
