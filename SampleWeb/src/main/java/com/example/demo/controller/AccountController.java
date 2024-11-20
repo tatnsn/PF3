@@ -134,7 +134,7 @@ public class AccountController {
 	    }
 
 	    String filename = UUID.randomUUID().toString() + "_" + profileImage.getOriginalFilename();
-	    String uploadDir = "C:/ForDevelop/workspace/PF3/SampleWeb/src/main/resources/static/images";
+	    String uploadDir = "src/main/resources/static/images";
 	    File destinationFile = new File(uploadDir, filename);
 
 	    try {

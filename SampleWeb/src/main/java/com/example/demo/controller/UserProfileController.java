@@ -80,7 +80,7 @@ public class UserProfileController {
         String filename = UUID.randomUUID().toString() + "_" + profileImage.getOriginalFilename();
 
         // 画像の保存先のディレクトリ
-        String uploadDir = "C:/ForDevelop/workspace/PF3/SampleWeb/src/main/resources/static/images";
+        String uploadDir = "src/main/resources/static/images";
         File destinationFile = new File(uploadDir, filename);
 
         // ディレクトリが存在しない場合は作成
