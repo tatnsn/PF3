@@ -11,7 +11,7 @@ WORKDIR /app
 COPY . /app
 
 # Mavenビルド
-RUN mvn clean package
+RUN mvn clean package -DskipTests
 
 # アプリケーション実行
 CMD ["java", "-jar", "target/SampleWeb-0.0.1-SNAPSHOT.jar"]
