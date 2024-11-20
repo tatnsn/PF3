@@ -31,3 +31,19 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Eclipse関連ファイル
+.metadata/
+*.log
+*.gz
+
+# Mavenのビルド成果物
+target/
+
+# Docker関連キャッシュ
+*.pid
+*.sock
+
+# その他一時ファイル
+.DS_Store
+Thumbs.db
