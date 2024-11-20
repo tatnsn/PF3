@@ -1,0 +1,26 @@
+version: '3.9'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9130:9130"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/spring_dev?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      - db
+    volumes:
+      - ./wait-for-it.sh:/wait-for-it.sh
+    command: ["./wait-for-it.sh", "db:3306", "--", "java", "-jar", "/app/target/SampleWeb-0.0.1-SNAPSHOT.jar"]
+
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: spring_dev
+    ports:
+      - "3306:3306"
