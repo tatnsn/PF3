@@ -1,14 +1,20 @@
-# 1. Java 17‚ğg—p‚·‚éƒx[ƒXƒCƒ[ƒW
-FROM eclipse-temurin:17-jdk
+# ãƒ™ãƒ¼ã‚¹ã‚¤ãƒ¡ãƒ¼ã‚¸ã¨ã—ã¦openjdkã‚’ä½¿ç”¨
+FROM openjdk:17-jdk-slim
 
-# 2. ì‹ÆƒfƒBƒŒƒNƒgƒŠ‚ğì¬
+# Mavenã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«
+RUN apt-get update && apt-get install -y maven
+
+# ä½œæ¥­ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’è¨­å®š
 WORKDIR /app
 
-# 3. ƒrƒ‹ƒh‚µ‚½JARƒtƒ@ƒCƒ‹‚ğƒRƒs[
-COPY target/SampleWeb-0.0.1-SNAPSHOT.jar app.jar
+# ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã‚’ã‚³ãƒ³ãƒ†ãƒŠã«ã‚³ãƒ”ãƒ¼
+COPY . /app
 
-# 4. ƒRƒ“ƒeƒi“à‚ÅƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚ğ‹N“®
-CMD ["java", "-jar", "app.jar"]
+# Mavenãƒ“ãƒ«ãƒ‰
+RUN mvn clean package
 
-# 5. g—p‚·‚éƒ|[ƒg‚ğw’è
-EXPOSE 8080
+# ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³å®Ÿè¡Œ
+CMD ["java", "-jar", "target/SampleWeb-0.0.1-SNAPSHOT.jar"]
+
+# å¿…è¦ãªãƒãƒ¼ãƒˆã‚’å…¬é–‹
+EXPOSE 9130
