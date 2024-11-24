@@ -27,7 +27,11 @@
                 <textarea id="body" name="body" class="form-control" rows="4" required></textarea>
             </div>
 
-          
+            <!-- 送信ボタン -->
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">送信</button>
+            </div>
+        </form>
 
         <!-- エラーメッセージ -->
         <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
