@@ -38,7 +38,7 @@ public class CategoryController {
         category.setDeletedDate(LocalDateTime.now()); // 削除日を設定
         category.setIsDeleted(true); // 論理削除フラグを設定
         categoryRepository.save(category); // 更新して保存
-        return "redirect:/categories";
+        return "redirect:/categories/list";
     }
     
     @GetMapping("/add")
@@ -54,7 +54,7 @@ public class CategoryController {
         }
         category.setCreatedDate(LocalDateTime.now()); // 作成日を設定
         categoryRepository.save(category);
-        return "redirect:/categories";
+        return "redirect:/categories/list";
     }
     
     @GetMapping("/edit/{id}")
@@ -72,6 +72,6 @@ public class CategoryController {
         category.setId(id); // IDを設定して更新
         category.setUpdatedDate(LocalDateTime.now()); // 更新日を設定
         categoryRepository.save(category);
-        return "redirect:/categories";
+        return "redirect:/categories/list";
     }
 }
