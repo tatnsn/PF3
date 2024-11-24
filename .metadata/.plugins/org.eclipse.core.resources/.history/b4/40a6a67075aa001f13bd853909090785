@@ -35,7 +35,6 @@ public class SecurityConfig {
         http
         
             .authorizeHttpRequests(authz -> authz
-            	.requestMatchers("/error").permitAll() // エラーページへのアクセスを許可
             	.requestMatchers("/send").permitAll() // /sendを公開にする
             	.requestMatchers("/login").permitAll()
                 .requestMatchers("/public/**").permitAll() // /public以下のURLを公開にする
