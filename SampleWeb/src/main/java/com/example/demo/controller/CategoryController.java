@@ -25,7 +25,7 @@ public class CategoryController {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    @GetMapping
+    @GetMapping("/list")
     public String listCategories(Model model) {
         List<Category> categories = categoryRepository.findByIsDeletedFalse(); // 論理削除されていないカテゴリを取得
         model.addAttribute("categories", categories);
