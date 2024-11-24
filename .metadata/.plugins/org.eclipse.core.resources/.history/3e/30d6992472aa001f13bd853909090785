@@ -16,8 +16,7 @@
             <!-- 公開アカウントリストページへのリンク -->
             <a href="/public/account-list" class="btn btn-secondary">公開アカウントリスト</a>
              <!-- お問い合わせ送信ページへのリンク -->
-            <a th:href="@{/send}" class="btn btn-success">お問い合わせ送信</a>
-
+            <a href="/send" class="btn btn-success">お問い合わせ送信</a>
         </div>
     </div>
 </body>

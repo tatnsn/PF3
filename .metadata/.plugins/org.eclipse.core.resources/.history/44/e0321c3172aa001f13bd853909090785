@@ -33,7 +33,7 @@ public class SendContactController {
     @Autowired
     private JavaMailSender emailSender; // メール送信サービスを注入
 
-    @GetMapping
+    @GetMapping("/send")
     public String showSendContactForm(Model model) {
         model.addAttribute("contact", new Contact());
 

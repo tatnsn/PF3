@@ -21,7 +21,7 @@ import com.example.demo.repository.jpa.ContactRepository;
 import jakarta.persistence.EntityNotFoundException;
 
 @Controller
-@RequestMapping("/send") // ルートを変更
+@RequestMapping // ルートを変更
 public class SendContactController {
 
     @Autowired
@@ -33,7 +33,7 @@ public class SendContactController {
     @Autowired
     private JavaMailSender emailSender; // メール送信サービスを注入
 
-    @GetMapping
+    @GetMapping("/send")
     public String showSendContactForm(Model model) {
         model.addAttribute("contact", new Contact());
 
