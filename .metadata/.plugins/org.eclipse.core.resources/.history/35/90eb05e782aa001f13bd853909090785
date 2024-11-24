@@ -1,0 +1,66 @@
+package com.example.demo.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
+
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return NoOpPasswordEncoder.getInstance(); // パスワードのハッシュ化を無効にする（推奨されない）
+    }
+
+    @Bean
+    public CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler() {
+        return new CustomAuthenticationSuccessHandler(); // カスタム成功ハンドラーのビーンを定義
+    }
+
+    @Bean
+    public HttpFirewall allowDoubleSlashHttpFirewall() {
+        StrictHttpFirewall firewall = new StrictHttpFirewall();
+        firewall.setAllowUrlEncodedDoubleSlash(true); // "//" を許可
+        return firewall;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(authz -> authz
+            		.requestMatchers("/error").permitAll() // エラーページを許可
+                    .requestMatchers("/favicon.ico", "/images/**", "/css/**", "/js/**", "/webjars/**").permitAll() // 静的リソースを許可
+                    .requestMatchers("/send").permitAll() // /sendを公開
+                    .requestMatchers("/login").permitAll() // ログインページを公開
+                    .requestMatchers("/public/**").permitAll() // 公開ページを許可
+                    .requestMatchers("/admin/**").hasRole("ADMIN") // 管理者専用
+                    .requestMatchers("/accounts/**", "/contacts/**", "/categories/**").hasRole("ADMIN") // 管理者専用
+                    .requestMatchers("/user/**").hasRole("USER") // ユーザー専用
+                    .anyRequest().authenticated() // その他は認証が必要
+            )
+            .formLogin(login -> login
+                .loginPage("/login")
+                .usernameParameter("email")
+                .passwordParameter("password")
+                .successHandler(customAuthenticationSuccessHandler()) // カスタム成功ハンドラーを設定
+                .failureUrl("/login?error=true")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout") // ログアウトURLの設定
+                .logoutSuccessUrl("/login?logout=true") // ログアウト成功後の遷移先URL
+                .invalidateHttpSession(true) // セッションの無効化
+                .permitAll()
+            );
+
+        // Firewall 設定を適用
+        http.setSharedObject(HttpFirewall.class, allowDoubleSlashHttpFirewall());
+
+        return http.build();
+    }
+}
