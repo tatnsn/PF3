@@ -33,16 +33,26 @@ public class SendContactController {
     @Autowired
     private JavaMailSender emailSender; // メール送信サービスを注入
 
-    @GetMapping("")
+    @GetMapping
     public String showSendContactForm(Model model) {
-        model.addAttribute("contact", new Contact());
+        System.out.println("GET /send が呼び出されました");
+        try {
+            model.addAttribute("contact", new Contact());
 
-        // カテゴリのリストを取得してモデルに追加
-        List<Category> categories = categoryRepository.findAll();
-        model.addAttribute("categories", categories);
+            // カテゴリリストを取得
+            List<Category> categories = categoryRepository.findAll();
+            System.out.println("カテゴリ件数: " + categories.size());
+            model.addAttribute("categories", categories);
+        } catch (Exception e) {
+            System.out.println("エラー発生: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("errorMessage", "カテゴリデータの取得に失敗しました");
+            return "error/500"; // カスタムエラーページ
+        }
 
-        return "/send"; // 送信画面を表示
+        return "send";
     }
+
 
     @PostMapping("") 
     public String sendContact(@ModelAttribute Contact contact, Model model) {

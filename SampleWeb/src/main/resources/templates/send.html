@@ -1,37 +1,13 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>お問い合わせ送信</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <title>お問い合わせフォーム</title>
 </head>
-<body class="bg-light">
-    <div class="container">
-        <h1 class="text-center my-4">お問い合わせ送信</h1>
-        <form th:action="@{/send}" method="post" th:object="${contact}">
-    	<div class="mb-3">
-    		<label for="category" class="form-label">カテゴリー:</label>
-    		<select id="category" name="category.id" class="form-select">
-        		<option value="" th:text="'選択してください'" selected></option>
-        		<option th:each="category : ${categories}" 
-                th:value="${category.id}" 
-                th:text="${category.name}"></opti>
-    		</select>
-		</div>
-
-    <div class="mb-3">
-        <label for="body" class="form-label">お問い合わせ内容:</label>
-        <textarea id="body" name="body" class="form-control" rows="4" required></textarea>
-    </div>
-    <div class="text-center">
-        <button type="submit" class="btn btn-primary">送信</button>
-    </div>
-</form>
-
-    </div>
-<div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<body>
+    <h1>お問い合わせフォーム</h1>
+    <p>カテゴリリストを表示</p>
+    <ul>
+        <li th:each="category : ${categories}" th:text="${category.name}"></li>
+    </ul>
 </body>
 </html>
