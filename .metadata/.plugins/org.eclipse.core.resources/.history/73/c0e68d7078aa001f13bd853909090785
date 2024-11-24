@@ -14,4 +14,5 @@ spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
 server.port=9130
 spring.profiles.active=prod
+logging.level.org.springframework.security=DEBUG
 
