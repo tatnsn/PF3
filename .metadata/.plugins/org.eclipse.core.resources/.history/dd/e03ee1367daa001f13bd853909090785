@@ -33,7 +33,7 @@ public class SendContactController {
     @Autowired
     private JavaMailSender emailSender; // メール送信サービスを注入
 
-    @GetMapping("")
+    @GetMapping
     public String showSendContactForm(Model model) {
         model.addAttribute("contact", new Contact());
 
@@ -44,7 +44,7 @@ public class SendContactController {
         return "/send"; // 送信画面を表示
     }
 
-    @PostMapping("") 
+    @PostMapping 
     public String sendContact(@ModelAttribute Contact contact, Model model) {
         // 送信されるデータを確認するためのログ出力
         System.out.println("送信されるカテゴリー ID: " + (contact.getCategory() != null ? contact.getCategory().getId() : "なし"));
