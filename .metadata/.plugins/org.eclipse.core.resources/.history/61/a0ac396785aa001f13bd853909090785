@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
     <title>お問い合わせフォーム</title>
 </head>
 <body>
     <h1>お問い合わせフォーム</h1>
-    <p>カテゴリリスト:</p>
+    <p>カテゴリリストを表示</p>
     <ul>
         <li th:each="category : ${categories}" th:text="${category.name}"></li>
     </ul>
