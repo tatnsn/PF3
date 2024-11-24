@@ -10499,3 +10499,5 @@ org.apache.maven.project.ProjectBuildingException: Some problems were encountere
 2024-11-24 23:21:54,578 [Worker-16: ビルド] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - skip non existing resourceDirectory C:\ForDevelop\workspace\PF3\SampleWeb\src\test\resources
 2024-11-24 23:22:04,561 [Worker-18: ビルド] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 0 resource from src\main\resources to target\classes
 2024-11-24 23:22:04,562 [Worker-18: ビルド] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 1 resource from src\main\resources to target\classes
+2024-11-24 23:22:04,564 [Worker-18: ビルド] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - skip non existing resourceDirectory C:\ForDevelop\workspace\PF3\SampleWeb\src\test\resources
+2024-11-24 23:29:53,324 [Worker-17: ビルド] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 3 resources from src\main\resources to target\classes
