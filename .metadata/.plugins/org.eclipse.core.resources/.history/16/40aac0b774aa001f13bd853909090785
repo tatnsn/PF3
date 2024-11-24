@@ -36,15 +36,14 @@ public class SecurityConfig {
         
             .authorizeHttpRequests(authz -> authz
             	.requestMatchers("/send").permitAll() // /sendを公開にする
-            	.requestMatchers("/login").permitAll()
-                .requestMatchers("/public/**").permitAll() // /public以下のURLを公開にする
-                .requestMatchers("/","/images/**", "/css/**", "/js/**", "/webjars/**").permitAll() // 静的リソースを公開にする
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/accounts/**").hasRole("ADMIN")
                 .requestMatchers("/contacts/**").hasRole("ADMIN")
                 .requestMatchers("/categories/**").hasRole("ADMIN")
                 .requestMatchers("/user/**").hasRole("USER")
-                
+                .requestMatchers("/login").permitAll()
+                .requestMatchers("/public/**").permitAll() // /public以下のURLを公開にする
+                .requestMatchers("/","/images/**", "/css/**", "/js/**", "/webjars/**").permitAll() // 静的リソースを公開にする
                 .anyRequest().authenticated()
             		)
             .formLogin(login -> login
