@@ -1,10 +1,6 @@
 package com.example.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -45,21 +41,13 @@ public class AdminSettingsController {
         accountToUpdate.setName(adminAccountForm.getAdminname());
         accountToUpdate.setEmail(adminAccountForm.getAdminemail());
         accountToUpdate.setPassword(adminAccountForm.getAdminpassword());
+	 
 
         // ログ出力
         System.out.println("Updating account: " + accountToUpdate);
 
         // ここでサービスを使用してデータを更新
         accountService.updateAccount(accountToUpdate);
-
-        // セッション情報を更新
-        UserDetails updatedUser = User.withUsername(accountToUpdate.getEmail())
-                .password(accountToUpdate.getPassword())
-                .roles(accountToUpdate.getRole().replace("ROLE_", "")) // "ROLE_" プレフィックスを除去
-                .build();
-
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(updatedUser, updatedUser.getPassword(), updatedUser.getAuthorities()));
 
         return "redirect:/admin/dashboard"; // 更新後のリダイレクト
     }
