@@ -68,7 +68,7 @@ public class UserProfileController {
 
     private String saveProfileImage(MultipartFile profileImage) throws IOException {
         if (profileImage == null || profileImage.isEmpty()) {
-            return null;
+            throw new IllegalArgumentException("プロフィール画像が空です。");
         }
 
         // ファイルサイズのバリデーション (2MB制限)
@@ -76,11 +76,15 @@ public class UserProfileController {
             throw new IllegalArgumentException("プロフィール画像は2MB以内である必要があります。");
         }
 
-        // ランダムなファイル名を生成
-        String filename = UUID.randomUUID().toString() + "_" + profileImage.getOriginalFilename();
+        // ファイル名をサニタイズ
+        String originalFilename = profileImage.getOriginalFilename();
+        if (originalFilename != null) {
+            originalFilename = originalFilename.replaceAll("[^a-zA-Z0-9.\\-_]", "_");
+        }
+        String filename = UUID.randomUUID().toString() + "_" + originalFilename;
 
-        // 画像の保存先のディレクトリ
-        String uploadDir = "src/main/resources/static/images";
+        // 画像の保存先ディレクトリ
+        String uploadDir = "SampleWeb/path/to/save/images";
         File destinationFile = new File(uploadDir, filename);
 
         // ディレクトリが存在しない場合は作成
@@ -89,9 +93,17 @@ public class UserProfileController {
         }
 
         // 画像ファイルを保存
-        profileImage.transferTo(destinationFile);
+        try {
+            profileImage.transferTo(destinationFile);
+        } catch (IOException e) {
+            System.out.println("画像保存エラー: " + e.getMessage());
+            e.printStackTrace();
+            throw new IOException("画像保存中にエラーが発生しました: " + e.getMessage(), e);
+        }
 
         // データベースには相対パスで保存
-        return filename;
+        return "/path/to/save/images/" + filename;
     }
+
+
 }

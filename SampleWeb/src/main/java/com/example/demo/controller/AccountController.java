@@ -70,6 +70,13 @@ public class AccountController {
 	            if (userAccountForm.getProfileImage() != null && !userAccountForm.getProfileImage().isEmpty()) {
 	                profileImageFileName = saveProfileImage(userAccountForm.getProfileImage());
 	            }
+	        } catch (IOException e) {
+	            userResult.rejectValue("profileImage", "error.profileImage", "画像の保存中にエラーが発生しました");
+	            model.addAttribute("userAccountForm", userAccountForm);
+	            model.addAttribute("adminAccountForm", new AdminAccountForm());
+	            model.addAttribute("errorMessage", "画像の保存中にエラーが発生しました: " + e.getMessage());
+	            e.printStackTrace(); // スタックトレースをログに出力
+	            return "account/add";
 	        } catch (IllegalArgumentException e) {
 	            userResult.rejectValue("profileImage", "error.profileImage", e.getMessage());
 	            model.addAttribute("userAccountForm", userAccountForm);
@@ -102,7 +109,7 @@ public class AccountController {
 	            return "account/add";
 	        }
 
-	     // Account エンティティのインスタンスを作成し、管理者情報を設定
+	        // Account エンティティのインスタンスを作成し、管理者情報を設定
 	        Account adminAccount = new Account();
 	        adminAccount.setName(adminAccountForm.getAdminname());
 	        adminAccount.setEmail(adminAccountForm.getAdminemail());
@@ -123,9 +130,10 @@ public class AccountController {
 
 
 
-	private String saveProfileImage(MultipartFile profileImage) {
+
+	private String saveProfileImage(MultipartFile profileImage) throws IOException {
 	    if (profileImage == null || profileImage.isEmpty()) {
-	        return null;
+	        throw new IllegalArgumentException("プロフィール画像が空です。");
 	    }
 
 	    // ファイルサイズのバリデーション (2MB制限)
@@ -133,19 +141,35 @@ public class AccountController {
 	        throw new IllegalArgumentException("プロフィール画像は2MB以内である必要があります。");
 	    }
 
-	    String filename = UUID.randomUUID().toString() + "_" + profileImage.getOriginalFilename();
-	    String uploadDir = "src/main/resources/static/images";
+	    // ファイル名をサニタイズ
+	    String originalFilename = profileImage.getOriginalFilename();
+	    if (originalFilename != null) {
+	        originalFilename = originalFilename.replaceAll("[^a-zA-Z0-9.\\-_]", "_");
+	    }
+	    String filename = UUID.randomUUID().toString() + "_" + originalFilename;
+
+	    // 画像の保存先ディレクトリ
+	    String uploadDir = "SampleWeb/path/to/save/images";
 	    File destinationFile = new File(uploadDir, filename);
 
+	    // ディレクトリが存在しない場合は作成
+	    if (!destinationFile.getParentFile().exists()) {
+	        destinationFile.getParentFile().mkdirs();
+	    }
+
+	    // 画像ファイルを保存
 	    try {
 	        profileImage.transferTo(destinationFile);
 	    } catch (IOException e) {
+	        System.out.println("画像保存エラー: " + e.getMessage());
 	        e.printStackTrace();
-	        return null;
+	        throw new IOException("画像保存中にエラーが発生しました: " + e.getMessage(), e);
 	    }
 
-	    return "/images/" + filename;
+	    // データベースには相対パスで保存
+	    return "/path/to/save/images/" + filename;
 	}
+
 
 
 
@@ -178,7 +202,7 @@ public class AccountController {
     }
 
 
-    @PostMapping("/edit/{id}")
+    @PostMapping("/edit/{id}") 
     public String editAccount(
             @PathVariable Long id,
             @RequestParam("role") String role,
@@ -191,8 +215,6 @@ public class AccountController {
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
 
-       
-
         if ("ROLE_USER".equals(role)) {
             if (userResult.hasErrors()) {
                 model.addAttribute("userAccountForm", userAccountForm);
@@ -204,9 +226,20 @@ public class AccountController {
             String profileImageFileName = account.getProfileImage();
             try {
                 if (userAccountForm.getProfileImage() != null && !userAccountForm.getProfileImage().isEmpty()) {
+                    // プロフィール画像の保存
                     profileImageFileName = saveProfileImage(userAccountForm.getProfileImage());
                 }
+            } catch (IOException e) {
+                // IOExceptionをキャッチしてエラーメッセージを設定
+                userResult.rejectValue("profileImage", "error.profileImage", "画像の保存中にエラーが発生しました");
+                model.addAttribute("userAccountForm", userAccountForm);
+                model.addAttribute("adminAccountForm", new AdminAccountForm());
+                model.addAttribute("account", account); // `account` をテンプレートに渡す
+                model.addAttribute("errorMessage", "画像の保存中にエラーが発生しました: " + e.getMessage());
+                e.printStackTrace(); // デバッグ用にスタックトレースを出力
+                return "account/edit";
             } catch (IllegalArgumentException e) {
+                // ファイルサイズ制限やその他のチェックに引っかかった場合
                 userResult.rejectValue("profileImage", "error.profileImage", e.getMessage());
                 model.addAttribute("userAccountForm", userAccountForm);
                 model.addAttribute("adminAccountForm", new AdminAccountForm());
@@ -215,6 +248,7 @@ public class AccountController {
                 return "account/edit";
             }
 
+            // アカウント情報の更新
             account.setName(userAccountForm.getName());
             account.setEmail(userAccountForm.getEmail());
             if (!userAccountForm.getPassword().isEmpty()) {
@@ -257,6 +291,7 @@ public class AccountController {
         accountRepository.save(account);
         return "redirect:/accounts";
     }
+
 
 
 
