@@ -23,7 +23,6 @@ import com.example.demo.enums.Status;
 import com.example.demo.form.AdminAccountForm;
 import com.example.demo.form.UserAccountForm;
 import com.example.demo.repository.jpa.AccountRepository;
-import com.example.demo.service.AccountService;
 
 import jakarta.validation.Valid;
 
@@ -33,9 +32,6 @@ public class AccountController {
 
 	@Autowired 
 	private AccountRepository accountRepository;
-	
-	@Autowired
-    private AccountService accountService; // 依存性注入
 
 
 	@GetMapping("/add")

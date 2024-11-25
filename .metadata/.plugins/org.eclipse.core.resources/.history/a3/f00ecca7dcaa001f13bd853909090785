@@ -23,7 +23,6 @@ import com.example.demo.enums.Status;
 import com.example.demo.form.AdminAccountForm;
 import com.example.demo.form.UserAccountForm;
 import com.example.demo.repository.jpa.AccountRepository;
-import com.example.demo.service.AccountService;
 
 import jakarta.validation.Valid;
 
@@ -33,9 +32,6 @@ public class AccountController {
 
 	@Autowired 
 	private AccountRepository accountRepository;
-	
-	@Autowired
-    private AccountService accountService; // 依存性注入
 
 
 	@GetMapping("/add")
@@ -69,8 +65,7 @@ public class AccountController {
 	        String profileImageFileName = null;
 	        try {
 	            if (userAccountForm.getProfileImage() != null && !userAccountForm.getProfileImage().isEmpty()) {
-	                // サービスを利用して画像を保存
-	                profileImageFileName = accountService.saveProfileImage(userAccountForm.getProfileImage());
+	                profileImageFileName = saveProfileImage(userAccountForm.getProfileImage());
 	            }
 	        } catch (IOException e) {
 	            userResult.rejectValue("profileImage", "error.profileImage", "画像の保存中にエラーが発生しました");
@@ -102,7 +97,6 @@ public class AccountController {
 	        userAccount.setAdminstatus(false); // 一般ユーザーのため `adminstatus` を `false` に設定
 
 	        accountRepository.save(userAccount);
-
 	    } else if ("ROLE_ADMIN".equals(role)) {
 	        // 管理者の登録処理
 	        if (adminResult.hasErrors()) {
@@ -130,7 +124,6 @@ public class AccountController {
 
 	    return "redirect:/accounts";
 	}
-
 
 
 

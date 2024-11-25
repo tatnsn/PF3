@@ -47,8 +47,9 @@ public class UserProfileController {
 
         if (profileForm.getProfileImage() != null && !profileForm.getProfileImage().isEmpty()) {
             try {
+                // サービスの saveProfileImage を利用
                 String profileImageFileName = accountService.saveProfileImage(profileForm.getProfileImage());
-                accountToUpdate.setProfileImage(profileImageFileName);
+                accountToUpdate.setProfileImage("/images/" + profileImageFileName);
             } catch (IllegalArgumentException e) {
                 bindingResult.rejectValue("profileImage", "error.profileImage", e.getMessage());
                 return "user/profile";
@@ -61,7 +62,6 @@ public class UserProfileController {
         accountService.updateAccount(accountToUpdate);
         return "redirect:/user/dashboard";
     }
-
 
 
     

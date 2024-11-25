@@ -82,20 +82,11 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     public String saveProfileImage(MultipartFile profileImage) throws IOException {
         if (profileImage == null || profileImage.isEmpty()) {
-            throw new IllegalArgumentException("プロフィール画像が空です。");
-        }
-
-        // ファイルサイズのバリデーション
-        if (profileImage.getSize() > 2 * 1024 * 1024) {
-            throw new IllegalArgumentException("プロフィール画像は2MB以内である必要があります。");
+            return null;
         }
 
         // ファイル名を生成
-        String originalFilename = profileImage.getOriginalFilename();
-        if (originalFilename != null) {
-            originalFilename = originalFilename.replaceAll("[^a-zA-Z0-9.\\-_]", "_"); // 不正文字をサニタイズ
-        }
-        String filename = UUID.randomUUID().toString() + "_" + originalFilename;
+        String fileName = UUID.randomUUID().toString() + "_" + profileImage.getOriginalFilename();
 
         // 保存先ディレクトリ
         String uploadDir = "/home/yoshimura/project/PF3/SampleWeb/path/to/save/images";
@@ -107,15 +98,11 @@ public class AccountServiceImpl implements AccountService {
         }
 
         // ファイルを保存
-        File destinationFile = new File(uploadDir, filename);
-        try {
-            profileImage.transferTo(destinationFile);
-        } catch (IOException e) {
-            throw new IOException("画像保存中にエラーが発生しました: " + e.getMessage(), e);
-        }
+        File destinationFile = new File(uploadDir, fileName);
+        profileImage.transferTo(destinationFile);
 
         // データベースには相対パスを保存
-        return "/path/to/save/images/" + filename;
+        return "/path/to/save/images/" + fileName;
     }
 
 }

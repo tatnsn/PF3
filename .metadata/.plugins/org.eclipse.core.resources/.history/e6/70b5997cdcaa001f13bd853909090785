@@ -1,8 +1,10 @@
 package com.example.demo.controller;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,13 +19,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.entity.Account;
 import com.example.demo.enums.Status;
 import com.example.demo.form.AdminAccountForm;
 import com.example.demo.form.UserAccountForm;
 import com.example.demo.repository.jpa.AccountRepository;
-import com.example.demo.service.AccountService;
 
 import jakarta.validation.Valid;
 
@@ -33,9 +35,6 @@ public class AccountController {
 
 	@Autowired 
 	private AccountRepository accountRepository;
-	
-	@Autowired
-    private AccountService accountService; // 依存性注入
 
 
 	@GetMapping("/add")
@@ -69,8 +68,7 @@ public class AccountController {
 	        String profileImageFileName = null;
 	        try {
 	            if (userAccountForm.getProfileImage() != null && !userAccountForm.getProfileImage().isEmpty()) {
-	                // サービスを利用して画像を保存
-	                profileImageFileName = accountService.saveProfileImage(userAccountForm.getProfileImage());
+	                profileImageFileName = saveProfileImage(userAccountForm.getProfileImage());
 	            }
 	        } catch (IOException e) {
 	            userResult.rejectValue("profileImage", "error.profileImage", "画像の保存中にエラーが発生しました");
@@ -102,7 +100,6 @@ public class AccountController {
 	        userAccount.setAdminstatus(false); // 一般ユーザーのため `adminstatus` を `false` に設定
 
 	        accountRepository.save(userAccount);
-
 	    } else if ("ROLE_ADMIN".equals(role)) {
 	        // 管理者の登録処理
 	        if (adminResult.hasErrors()) {
@@ -129,6 +126,48 @@ public class AccountController {
 	    }
 
 	    return "redirect:/accounts";
+	}
+
+
+
+
+	private String saveProfileImage(MultipartFile profileImage) throws IOException {
+	    if (profileImage == null || profileImage.isEmpty()) {
+	        throw new IllegalArgumentException("プロフィール画像が空です。");
+	    }
+
+	    // ファイルサイズのバリデーション (2MB制限)
+	    if (profileImage.getSize() > 2 * 1024 * 1024) {
+	        throw new IllegalArgumentException("プロフィール画像は2MB以内である必要があります。");
+	    }
+
+	    // ファイル名をサニタイズ
+	    String originalFilename = profileImage.getOriginalFilename();
+	    if (originalFilename != null) {
+	        originalFilename = originalFilename.replaceAll("[^a-zA-Z0-9.\\-_]", "_");
+	    }
+	    String filename = UUID.randomUUID().toString() + "_" + originalFilename;
+
+	    // 画像の保存先ディレクトリ
+	    String uploadDir = "/home/yoshimura/project/PF3/SampleWeb/path/to/save/images";
+	    File destinationFile = new File(uploadDir, filename);
+
+	    // ディレクトリが存在しない場合は作成
+	    if (!destinationFile.getParentFile().exists()) {
+	        destinationFile.getParentFile().mkdirs();
+	    }
+
+	    // 画像ファイルを保存
+	    try {
+	        profileImage.transferTo(destinationFile);
+	    } catch (IOException e) {
+	        System.out.println("画像保存エラー: " + e.getMessage());
+	        e.printStackTrace();
+	        throw new IOException("画像保存中にエラーが発生しました: " + e.getMessage(), e);
+	    }
+
+	    // データベースには相対パスで保存
+	    return "/path/to/save/images/" + filename;
 	}
 
 
