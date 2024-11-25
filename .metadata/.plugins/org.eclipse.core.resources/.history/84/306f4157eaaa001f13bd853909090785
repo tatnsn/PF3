@@ -38,7 +38,7 @@ public class UserSettingsController {
         }
 
         // ユーザー情報の更新処理
-        Account accountToUpdate = accountService.getCurrentUser(); // 修正
+        Account accountToUpdate = accountService.getCurrentAdminUser(); // 現在のアカウントを取得
         
         accountToUpdate.setEmail(userAccountForm.getEmail());
         accountToUpdate.setPassword(userAccountForm.getPassword());
