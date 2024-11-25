@@ -87,7 +87,6 @@ public class AccountServiceImpl implements AccountService {
 
         // ファイル名を生成
         String fileName = UUID.randomUUID().toString() + "_" + profileImage.getOriginalFilename();
-
         // 保存先ディレクトリ
         String uploadDir = "/home/yoshimura/project/PF3/SampleWeb/path/to/save/images";
         File dir = new File(uploadDir);
@@ -101,8 +100,7 @@ public class AccountServiceImpl implements AccountService {
         File destinationFile = new File(uploadDir, fileName);
         profileImage.transferTo(destinationFile);
 
-        // データベースには相対パスを保存
-        return "/path/to/save/images/" + fileName;
+        // ファイル名のみを返す
+        return fileName;
     }
-
 }
