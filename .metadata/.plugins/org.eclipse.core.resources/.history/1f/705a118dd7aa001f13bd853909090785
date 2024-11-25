@@ -14,5 +14,4 @@ spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
 server.port=9130
 spring.profiles.active=prod
-spring.web.resources.static-locations=file:/home/yoshimura/project/PF3/SampleWeb/
 

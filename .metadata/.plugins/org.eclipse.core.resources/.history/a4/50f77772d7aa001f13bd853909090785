@@ -149,7 +149,7 @@ public class AccountController {
 	    String filename = UUID.randomUUID().toString() + "_" + originalFilename;
 
 	    // 画像の保存先ディレクトリ
-	    String uploadDir = "/home/yoshimura/project/PF3/SampleWeb/path/to/save/images";
+	    String uploadDir = "SampleWeb/path/to/save/images";
 	    File destinationFile = new File(uploadDir, filename);
 
 	    // ディレクトリが存在しない場合は作成
