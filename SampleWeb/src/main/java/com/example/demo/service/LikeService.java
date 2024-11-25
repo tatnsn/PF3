@@ -31,20 +31,20 @@ public class LikeService {
         }
     }
 
-    // 月ごとのいいねランキング
+ // 管理者を除外した月ごとのいいねランキング
     public List<Account> findTopLikedAccountsForMonth(LocalDateTime startOfMonth, LocalDateTime endOfMonth) {
-        return accountRepository.findTopLikedAccountsForMonth(startOfMonth, endOfMonth);
+        return accountRepository.findTopLikedAccountsExcludingAdminsForMonth(startOfMonth, endOfMonth);
     }
 
-    // 年間のいいねランキング
+    // 管理者を除外した年間のいいねランキング
     public List<Account> findTopLikedAccountsForPeriod(LocalDateTime startOfYear, LocalDateTime endOfYear) {
-        return accountRepository.findTopLikedAccountsForPeriod(startOfYear, endOfYear);
+        return accountRepository.findTopLikedAccountsExcludingAdminsForPeriod(startOfYear, endOfYear);
     }
     public int getLikesForYear(Long userId, int year) {
         LocalDate startOfYear = LocalDate.of(year, 1, 1);
         LocalDateTime startOfYearDateTime = startOfYear.atStartOfDay();
         LocalDateTime endOfYearDateTime = startOfYear.withMonth(12).withDayOfMonth(31).atTime(23, 59, 59);
-        
+
         List<Account> accounts = accountRepository.findLikesByUserAndPeriod(userId, startOfYearDateTime, endOfYearDateTime);
         return accounts.stream().mapToInt(Account::getLikes).sum();
     }
@@ -53,8 +53,10 @@ public class LikeService {
         LocalDate startOfMonth = LocalDate.of(year, month, 1);
         LocalDateTime startOfMonthDateTime = startOfMonth.atStartOfDay();
         LocalDateTime endOfMonthDateTime = startOfMonth.with(TemporalAdjusters.lastDayOfMonth()).atTime(23, 59, 59);
-        
+
         List<Account> accounts = accountRepository.findLikesByUserAndPeriod(userId, startOfMonthDateTime, endOfMonthDateTime);
         return accounts.stream().mapToInt(Account::getLikes).sum();
     }
 }
+
+

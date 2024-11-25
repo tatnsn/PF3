@@ -26,12 +26,12 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     List<Account> findByIsDeletedFalseAndRole(String role);
 
  // // 月ごとのいいねランキングを取得するクエリ
-    @Query("SELECT a FROM Account a WHERE a.isDeleted = false AND a.createdDate BETWEEN :startOfMonth AND :endOfMonth ORDER BY a.likes DESC")
-    List<Account> findTopLikedAccountsForMonth(@Param("startOfMonth") LocalDateTime startOfMonth, @Param("endOfMonth") LocalDateTime endOfMonth);
+    @Query("SELECT a FROM Account a WHERE a.role <> 'ROLE_ADMIN' AND a.createdDate BETWEEN :start AND :end ORDER BY a.likes DESC")
+    List<Account> findTopLikedAccountsExcludingAdminsForMonth(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
-    // 任意の期間のいいねランキングを取得するクエリ（年間ランキング用）
-    @Query("SELECT a FROM Account a WHERE a.isDeleted = false AND a.createdDate BETWEEN :startOfPeriod AND :endOfPeriod ORDER BY a.likes DESC")
-    List<Account> findTopLikedAccountsForPeriod(@Param("startOfPeriod") LocalDateTime startOfPeriod, @Param("endOfPeriod") LocalDateTime endOfPeriod);
+    @Query("SELECT a FROM Account a WHERE a.role <> 'ROLE_ADMIN' AND a.createdDate BETWEEN :start AND :end ORDER BY a.likes DESC")
+    List<Account> findTopLikedAccountsExcludingAdminsForPeriod(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
     
     @Query("SELECT a FROM Account a WHERE a.id = :userId AND a.isDeleted = false AND a.createdDate BETWEEN :startDate AND :endDate")
     List<Account> findLikesByUserAndPeriod(@Param("userId") Long userId, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
