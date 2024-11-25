@@ -176,6 +176,7 @@ public class AccountController {
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
 
+        // 一般ユーザーの更新処理
         if ("ROLE_USER".equals(role)) {
             if (userResult.hasErrors()) {
                 model.addAttribute("userAccountForm", userAccountForm);
@@ -189,15 +190,8 @@ public class AccountController {
                 if (userAccountForm.getProfileImage() != null && !userAccountForm.getProfileImage().isEmpty()) {
                     profileImageFileName = accountService.saveProfileImage(userAccountForm.getProfileImage());
                 }
-            } catch (IllegalArgumentException e) {
-                userResult.rejectValue("profileImage", "error.profileImage", e.getMessage());
-                model.addAttribute("userAccountForm", userAccountForm);
-                model.addAttribute("adminAccountForm", new AdminAccountForm());
-                model.addAttribute("account", account);
-                model.addAttribute("errorMessage", e.getMessage());
-                return "account/edit";
-            } catch (IOException e) {
-                userResult.rejectValue("profileImage", "error.profileImage", "画像の保存中にエラーが発生しました");
+            } catch (IllegalArgumentException | IOException e) {
+                userResult.rejectValue("profileImage", "error.profileImage", "画像の保存中にエラーが発生しました: " + e.getMessage());
                 model.addAttribute("userAccountForm", userAccountForm);
                 model.addAttribute("adminAccountForm", new AdminAccountForm());
                 model.addAttribute("account", account);
@@ -205,12 +199,44 @@ public class AccountController {
                 return "account/edit";
             }
 
+            account.setName(userAccountForm.getName());
+            account.setEmail(userAccountForm.getEmail());
+            account.setFurigana(userAccountForm.getFurigana());
+            account.setGender(userAccountForm.getGender());
+            account.setAge(userAccountForm.getAge());
+            account.setIntroduction(userAccountForm.getIntroduction());
+            account.setStatus(userAccountForm.getStatus());
             account.setProfileImage(profileImageFileName);
         }
 
+        // 管理者の更新処理
+        else if ("ROLE_ADMIN".equals(role)) {
+            if (adminResult.hasErrors()) {
+                model.addAttribute("userAccountForm", new UserAccountForm());
+                model.addAttribute("adminAccountForm", adminAccountForm);
+                model.addAttribute("account", account);
+                return "account/edit";
+            }
+
+            account.setName(adminAccountForm.getAdminname());
+            account.setEmail(adminAccountForm.getAdminemail());
+            account.setPassword(adminAccountForm.getAdminpassword());
+            account.setStatus(adminAccountForm.getStatus());
+        }
+
+        // ロールが無効な場合
+        else {
+            model.addAttribute("errorMessage", "無効なロールです。");
+            return "account/edit";
+        }
+
+        // アカウント情報を保存
         accountRepository.save(account);
+
+        // 成功時リダイレクト
         return "redirect:/accounts";
     }
+
 
 
 
