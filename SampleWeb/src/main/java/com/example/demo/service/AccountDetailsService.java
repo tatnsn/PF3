@@ -13,7 +13,7 @@ import com.example.demo.entity.Account;
 import com.example.demo.enums.Status;
 import com.example.demo.repository.jpa.AccountRepository;
 
-@Service  // ここで自動的にBeanとして登録される
+@Service
 public class AccountDetailsService implements UserDetailsService {
 
     @Autowired
@@ -24,17 +24,21 @@ public class AccountDetailsService implements UserDetailsService {
         Account account = accountRepository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("Email not found: " + email));
 
+        // アカウントが論理削除されている場合は例外をスロー
+        if (account.isDeleted()) {
+            throw new UsernameNotFoundException("The account is deactivated: " + email);
+        }
+
         // ステータスが "ACCESS_DENIED" の場合は例外をスロー
         if (account.getStatus() == Status.ACCESS_DENIED) {
             throw new UsernameNotFoundException("Access Denied for user: " + email);
         }
         
-     // role が null または空の場合を防ぐ
+        // role が null または空の場合を防ぐ
         String role = account.getRole();
         if (role == null || role.trim().isEmpty()) {
             throw new IllegalArgumentException("Role must not be null or empty for user: " + email);
         }
-
 
         return new org.springframework.security.core.userdetails.User(
             account.getEmail(),
